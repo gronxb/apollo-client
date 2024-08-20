@@ -895,7 +895,7 @@ Did you mean to call refetch(variables) instead of refetch({ variables })?`,
   public reobserveAsConcast(
     newOptions?: Partial<WatchQueryOptions<TVariables, TData>>,
     newNetworkStatus?: NetworkStatus
-  ): Concast<ApolloQueryResult<TData>> {
+  ): Concast<ApolloQueryResult<TData>> | undefined {
     this.isTornDown = false;
 
     const useDisposableConcast =
@@ -912,6 +912,10 @@ Did you mean to call refetch(variables) instead of refetch({ variables })?`,
 
     // Save the old variables, since Object.assign may modify them below.
     const oldVariables = this.options.variables;
+    if (newOptions && !equal(newOptions.variables, oldVariables)) {
+      return this.concast;
+    }
+
     const oldFetchPolicy = this.options.fetchPolicy;
 
     const mergedOptions = compact(this.options, newOptions || {});
@@ -1007,7 +1011,7 @@ Did you mean to call refetch(variables) instead of refetch({ variables })?`,
     newNetworkStatus?: NetworkStatus
   ): Promise<ApolloQueryResult<TData>> {
     return this.reobserveAsConcast(newOptions, newNetworkStatus)
-      .promise as TODO;
+      ?.promise as TODO;
   }
 
   public resubscribeAfterError(
